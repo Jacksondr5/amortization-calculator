@@ -4,46 +4,49 @@
 # https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
 
 trigger:
-- master
+  - master
 name: $(buildNumber)
 pool:
-  vmImage: 'windows-latest'
+  vmImage: "windows-latest"
 
 variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
+  solution: "AmortizationCalculator.sln"
+  buildPlatform: "Any CPU"
+  buildConfiguration: "Release"
   buildNumber: 0.1$(Rev:.r)
 
 steps:
-- task: UseDotNet@2
-  inputs:
-    packageType: 'sdk'
-    version: '3.1.x'
-- task: SonarCloudPrepare@1
-  inputs:
-    SonarCloud: 'SonarCloud'
-    organization: 'jacksondr5'
-    scannerMode: 'MSBuild'
-    projectKey: '52f531744fe82ff55d2235f3b95ca1a8b9a2c903'
-    projectName: 'amortization-calculator'
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'restore'
-    projects: $(solution)
-    feedsToUse: 'select'
-    verbosityRestore: 'Normal'
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'build'
-    projects: $(solution)
-    arguments: '-c $(buildConfiguration) -r $(buildPlatform) --no-restore --no-logo'
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'test'
-    projects: $(solution)
-    arguments: '--no-logo --no-build'
-- task: SonarCloudAnalyze@1
-- task: SonarCloudPublish@1
-  inputs:
-    pollingTimeoutSec: '300'
+  - task: UseDotNet@2
+    inputs:
+      packageType: "sdk"
+      version: "3.1.x"
+  - task: SonarCloudPrepare@1
+    inputs:
+      SonarCloud: "SonarCloud"
+      organization: "jacksondr5"
+      scannerMode: "MSBuild"
+      projectKey: "52f531744fe82ff55d2235f3b95ca1a8b9a2c903"
+      projectName: "amortization-calculator"
+  - task: DotNetCoreCLI@2
+    displayName: dotnet restore
+    inputs:
+      command: "restore"
+      projects: $(solution)
+      feedsToUse: "select"
+      verbosityRestore: "Normal"
+  - task: DotNetCoreCLI@2
+    displayName: dotnet build
+    inputs:
+      command: "build"
+      projects: $(solution)
+      arguments: "-c $(buildConfiguration) -r $(buildPlatform) --no-restore --no-logo"
+  - task: DotNetCoreCLI@2
+    displayName: dotnet test
+    inputs:
+      command: "test"
+      projects: $(solution)
+      arguments: "--no-logo --no-build"
+  - task: SonarCloudAnalyze@1
+  - task: SonarCloudPublish@1
+    inputs:
+      pollingTimeoutSec: "300"
