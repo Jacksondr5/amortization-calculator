@@ -5,7 +5,7 @@
 
 trigger:
   - master
-name: $(buildNumber)
+name: 0.1$(Rev:.r)
 pool:
   vmImage: "windows-latest"
 
@@ -13,7 +13,6 @@ variables:
   solution: "AmortizationCalculator.sln"
   buildPlatform: "Any CPU"
   buildConfiguration: "Release"
-  buildNumber: 0.1$(Rev:.r)
 
 steps:
   - task: UseDotNet@2
@@ -27,6 +26,7 @@ steps:
       scannerMode: "MSBuild"
       projectKey: "52f531744fe82ff55d2235f3b95ca1a8b9a2c903"
       projectName: "amortization-calculator"
+      projectVersion: $(Build.BuildNumber)
   - task: DotNetCoreCLI@2
     displayName: dotnet restore
     inputs:
