@@ -1,0 +1,49 @@
+# .NET Desktop
+# Build and run tests for .NET Desktop or Windows classic desktop solutions.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
+
+trigger:
+- master
+name: $(buildNumber)
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+  buildNumber: 0.1$(Rev:.r)
+
+steps:
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '3.1.x'
+- task: SonarCloudPrepare@1
+  inputs:
+    SonarCloud: 'SonarCloud'
+    organization: 'jacksondr5'
+    scannerMode: 'MSBuild'
+    projectKey: '52f531744fe82ff55d2235f3b95ca1a8b9a2c903'
+    projectName: 'amortization-calculator'
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'restore'
+    projects: $(solution)
+    feedsToUse: 'select'
+    verbosityRestore: 'Normal'
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'build'
+    projects: $(solution)
+    arguments: '-c $(buildConfiguration) -r $(buildPlatform) --no-restore --no-logo'
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'test'
+    projects: $(solution)
+    arguments: '--no-logo --no-build'
+- task: SonarCloudAnalyze@1
+- task: SonarCloudPublish@1
+  inputs:
+    pollingTimeoutSec: '300'
