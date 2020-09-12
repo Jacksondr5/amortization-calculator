@@ -39,7 +39,7 @@ steps:
     inputs:
       command: "build"
       projects: $(solution)
-      arguments: "-c $(buildConfiguration) -r $(buildPlatform) --no-restore --no-logo"
+      arguments: "-c $(buildConfiguration) --no-restore --no-logo"
   - task: DotNetCoreCLI@2
     displayName: dotnet test
     inputs:
