@@ -24,7 +24,7 @@ steps:
       SonarCloud: "SonarCloud"
       organization: "jacksondr5"
       scannerMode: "MSBuild"
-      projectKey: "52f531744fe82ff55d2235f3b95ca1a8b9a2c903"
+      projectKey: "260209af2fab44121dc70bdfece4612df5f941ac"
       projectName: "amortization-calculator"
       projectVersion: $(Build.BuildNumber)
   - task: DotNetCoreCLI@2
