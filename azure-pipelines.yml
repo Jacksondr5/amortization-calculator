@@ -39,13 +39,13 @@ steps:
     inputs:
       command: "build"
       projects: $(solution)
-      arguments: "-c $(buildConfiguration) --no-restore --no-logo"
+      arguments: "-c $(buildConfiguration) --no-restore --nologo"
   - task: DotNetCoreCLI@2
     displayName: dotnet test
     inputs:
       command: "test"
       projects: $(solution)
-      arguments: "--no-logo --no-build"
+      arguments: "--nologo --no-build"
   - task: SonarCloudAnalyze@1
   - task: SonarCloudPublish@1
     inputs:
