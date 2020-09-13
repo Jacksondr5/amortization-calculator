@@ -21,7 +21,7 @@ namespace AmortizationCalculator.Test
                     .SelectMany(
                         x => new bool[] { true, false },
                         (accrualBasis, isLeapYear) =>
-                                new object[] { accrualBasis, isLeapYear }
+                            new object[] { accrualBasis, isLeapYear }
                     );
 
             public string GetDisplayName(MethodInfo methodInfo, object[] data)

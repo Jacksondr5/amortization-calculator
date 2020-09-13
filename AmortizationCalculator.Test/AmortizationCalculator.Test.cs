@@ -1,9 +1,580 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NodaTime;
 
 namespace AmortizationCalculator.Test
 {
     [TestClass]
     public class AmortizationCalculatorTest
     {
+        // public class PaymentFrequencyDataSourceAttribute : Attribute, ITestDataSource
+        // {
+        //     public IEnumerable<object[]> GetData(MethodInfo methodInfo) =>
+        //         Enum
+        //             .GetValues(typeof(PaymentFrequency))
+        //             .Cast<PaymentFrequency>()
+        //             .Select(x => new object[] { x });
+
+        //     public string GetDisplayName(MethodInfo methodInfo, object[] data)
+        //     {
+        //         var enumName = Enum.GetName(typeof(AccrualBasis), data[0]);
+        //         return $"{methodInfo.Name} - {enumName}";
+        //     }
+        // }
+
+        // [DataTestMethod]
+        // [PaymentFrequencyDataSource]
+        // public void GenerateAmortizationSchedule_ShouldGenerateScheduleWithCorrectFrequency(
+        //     PaymentFrequency frequency
+        // )
+        // {
+
+        // }
+        private static Loan GetTestLoan(
+            AccrualBasis accrualBasis = AccrualBasis.ActualActual,
+            decimal amount = 0,
+            decimal interestRate = 0,
+            DateTime? interestAccrualStartDate = null
+        ) => new Loan
+        {
+            AccrualBasis = accrualBasis,
+            Amount = amount,
+            InterestRate = interestRate,
+            InterestAccrualStartDate =
+                interestAccrualStartDate ?? new DateTime(2001, 1, 1)
+        };
+
+        private static PaymentSchedule GetTestPaymentSchedule(
+            int numberOfPayments = 0,
+            PaymentFrequency paymentFrequency = PaymentFrequency.Annual,
+            decimal paymentAmount = 0,
+            PaymentType paymentType = PaymentType.InterestOnly,
+            DateTime? startDate = null
+        ) => new PaymentSchedule
+        {
+            NumberOfPayments = numberOfPayments,
+            PaymentAmount = paymentAmount,
+            PaymentFrequency = paymentFrequency,
+            PaymentType = paymentType,
+            StartDate = startDate ?? new DateTime(2001, 1, 1)
+        };
+
+        [TestMethod]
+        public void GenerateAmSchedule_FrequencyIsAnnual_ShouldGenerateCorrectNumberOfItems()
+        {
+            //Assemble
+            var startDate = new LocalDate(2001, 1, 1);
+            var expected = new List<DateTime>
+            {
+                startDate.ToDateTimeUnspecified(),
+                startDate.PlusYears(1).ToDateTimeUnspecified(),
+                startDate.PlusYears(2).ToDateTimeUnspecified(),
+            };
+
+            //Act
+            RunFrequencyTest(expected, PaymentFrequency.Annual);
+        }
+
+        [TestMethod]
+        public void GenerateAmSchedule_FrequencyIsSemiAnnual_ShouldGenerateCorrectNumberOfItems()
+        {
+            //Assemble
+            var startDate = new LocalDate(2001, 1, 1);
+            var expected = new List<DateTime>
+            {
+                startDate.ToDateTimeUnspecified(),
+                startDate.PlusMonths(6).ToDateTimeUnspecified(),
+                startDate.PlusYears(1).ToDateTimeUnspecified(),
+            };
+
+            //Act
+            RunFrequencyTest(expected, PaymentFrequency.SemiAnnual);
+        }
+
+        [TestMethod]
+        public void GenerateAmSchedule_FrequencyIsQuarterly_ShouldGenerateCorrectNumberOfItems()
+        {
+            //Assemble
+            var startDate = new LocalDate(2001, 1, 1);
+            var expected = new List<DateTime>
+            {
+                startDate.ToDateTimeUnspecified(),
+                startDate.PlusMonths(3).ToDateTimeUnspecified(),
+                startDate.PlusMonths(6).ToDateTimeUnspecified(),
+            };
+
+            //Act
+            RunFrequencyTest(expected, PaymentFrequency.Quarterly);
+        }
+
+        [TestMethod]
+        public void GenerateAmSchedule_FrequencyIsMonthly_ShouldGenerateCorrectNumberOfItems()
+        {
+            //Assemble
+            var startDate = new LocalDate(2001, 1, 1);
+            var expected = new List<DateTime>
+            {
+                startDate.ToDateTimeUnspecified(),
+                startDate.PlusMonths(1).ToDateTimeUnspecified(),
+                startDate.PlusMonths(2).ToDateTimeUnspecified(),
+            };
+
+            //Act
+            RunFrequencyTest(expected, PaymentFrequency.Monthly);
+        }
+
+        [TestMethod]
+        public void GenerateAmSchedule_FrequencyIsWeekly_ShouldGenerateCorrectNumberOfItems()
+        {
+            //Assemble
+            var startDate = new LocalDate(2001, 1, 1);
+            var expected = new List<DateTime>
+            {
+                startDate.ToDateTimeUnspecified(),
+                startDate.PlusWeeks(1).ToDateTimeUnspecified(),
+                startDate.PlusWeeks(2).ToDateTimeUnspecified(),
+            };
+
+            //Act
+            RunFrequencyTest(expected, PaymentFrequency.Weekly);
+        }
+
+        private static void RunFrequencyTest(
+            List<DateTime> expected,
+            PaymentFrequency frequency
+        )
+        {
+            //Act
+            var actual = AmortizationCalculator.GenerateAmortizationSchedule(
+                GetTestLoan(),
+                new List<PaymentSchedule>
+                {
+                    GetTestPaymentSchedule(
+                        numberOfPayments: expected.Count,
+                        paymentFrequency: frequency
+                    )
+                }
+            );
+
+            //Assert
+            actual.Select(x => x.Date).Should().Equal(expected);
+        }
+
+        [TestMethod]
+        public void GenerateAmSchedule_MultiplePaymentSchedules_ShouldOrderByDate()
+        {
+            //Assemble
+            var annualStartDate = new LocalDate(2001, 1, 1);
+            var semiAnnualStartDate = new LocalDate(2001, 3, 1);
+            var expected = new List<DateTime>
+            {
+                annualStartDate.ToDateTimeUnspecified(),
+                semiAnnualStartDate.ToDateTimeUnspecified(),
+                semiAnnualStartDate.PlusMonths(6).ToDateTimeUnspecified(),
+                annualStartDate.PlusYears(1).ToDateTimeUnspecified(),
+                semiAnnualStartDate.PlusYears(1).ToDateTimeUnspecified(),
+            };
+
+            //Act
+            var actual = AmortizationCalculator.GenerateAmortizationSchedule(
+                GetTestLoan(),
+                new List<PaymentSchedule>
+                {
+                    GetTestPaymentSchedule(
+                        numberOfPayments: 2,
+                        paymentFrequency: PaymentFrequency.Annual,
+                        startDate: annualStartDate.ToDateTimeUnspecified()
+                    ),
+                    GetTestPaymentSchedule(
+                        numberOfPayments: 3,
+                        paymentFrequency: PaymentFrequency.SemiAnnual,
+                        startDate: semiAnnualStartDate.ToDateTimeUnspecified()
+                    )
+                }
+            );
+
+            //Assert
+            actual.Select(x => x.Date).Should().Equal(expected);
+        }
+
+        [DataTestMethod]
+        [DataRow(1)]
+        [DataRow(2)]
+        [DataRow(3)]
+        public void GenerateAmSchedule_ShouldAccrueInterestFromStartDate(
+            int loanLength
+        )
+        {
+            //Assemble
+            var interestStartDate = new LocalDate(2001, 1, 1);
+            var paymentStartDate = new DateTime(2001 + loanLength, 1, 1);
+            var loan = GetTestLoan(
+                amount: 1000,
+                interestRate: 0.5m,
+                interestAccrualStartDate:
+                    interestStartDate.ToDateTimeUnspecified()
+            );
+            var yearlyInterest = loan.Amount * loan.InterestRate;
+            var paymentSchedule = new List<PaymentSchedule>
+            {
+                GetTestPaymentSchedule(
+                    numberOfPayments: 1,
+                    paymentFrequency: PaymentFrequency.Annual,
+                    startDate: paymentStartDate
+                )
+            };
+
+            //Act
+            var actual = AmortizationCalculator.GenerateAmortizationSchedule(
+                loan,
+                paymentSchedule
+            );
+
+            //Assert
+            actual[0].Interest.Should().Be(yearlyInterest * loanLength);
+        }
+
+        [TestMethod]
+        public void GenerateAmSchedule_PaymentTypeIsInterestOnly_ShouldGenerateAmSchedule()
+        {
+            //Assemble
+            var startDate = new LocalDate(2001, 1, 1);
+            var loan = GetTestLoan(
+                accrualBasis: AccrualBasis.Thirty360,
+                amount: 1000,
+                interestRate: 0.5m,
+                interestAccrualStartDate: startDate.ToDateTimeUnspecified()
+            );
+            var monthlyDate = startDate.PlusMonths(1).ToDateTimeUnspecified();
+            var quarterlyDate = startDate.PlusMonths(3).ToDateTimeUnspecified();
+            var semiDate = startDate.PlusMonths(6).ToDateTimeUnspecified();
+            var annualDate = startDate.PlusYears(1).ToDateTimeUnspecified();
+            var expected = new List<AmortizationScheduleItem>
+            {
+                new AmortizationScheduleItem
+                {
+                    Date = monthlyDate,
+                    //1 month of interest
+                    Interest = loan.Amount * loan.InterestRate / 12
+                },
+                new AmortizationScheduleItem
+                {
+                    Date = quarterlyDate,
+                    //2 months of interest
+                    Interest = loan.Amount * loan.InterestRate / 6
+                },
+                new AmortizationScheduleItem
+                {
+                    Date = semiDate,
+                    //3 months of interest
+                    Interest = loan.Amount * loan.InterestRate / 4
+                },
+                new AmortizationScheduleItem
+                {
+                    Date = annualDate,
+                    //6 months of interest
+                    Interest = loan.Amount * loan.InterestRate / 2
+                }
+            };
+            var paymentSchedules = new List<PaymentSchedule>
+            {
+                GetTestPaymentSchedule(
+                    numberOfPayments: 1,
+                    paymentFrequency: PaymentFrequency.Monthly,
+                    startDate: monthlyDate
+                ),
+                GetTestPaymentSchedule(
+                    numberOfPayments: 1,
+                    paymentFrequency: PaymentFrequency.Quarterly,
+                    startDate: quarterlyDate
+                ),
+                GetTestPaymentSchedule(
+                    numberOfPayments: 1,
+                    paymentFrequency: PaymentFrequency.SemiAnnual,
+                    startDate: semiDate
+                ),
+                GetTestPaymentSchedule(
+                    numberOfPayments: 1,
+                    paymentFrequency: PaymentFrequency.Annual,
+                    startDate: annualDate
+                )
+            };
+
+            //Act
+            var actual = AmortizationCalculator.GenerateAmortizationSchedule(
+                loan,
+                paymentSchedules
+            );
+
+            //Assert
+            actual
+                .Select(x => x.Date)
+                .Should()
+                .Equal(expected.Select(x => x.Date));
+            actual
+                .Select(x => TestUtils.RoundDecimal(x.Interest))
+                .Should()
+                .Equal(expected.Select(x => TestUtils.RoundDecimal(x.Interest)));
+        }
+
+        [TestMethod]
+        public void GenerateAmSchedule_PaymentTypeIsLevelPayment_ShouldGenerateAmSchedule()
+        {
+            //Assemble
+            var loan = GetTestLoan(
+                amount: 1000,
+                interestRate: 0.1m
+            );
+            var paymentSchedule = new List<PaymentSchedule>
+            {
+                GetTestPaymentSchedule(
+                    numberOfPayments: 3,
+                    paymentAmount: 338.9m,
+                    paymentFrequency: PaymentFrequency.Monthly,
+                    paymentType: PaymentType.LevelPayment,
+                    startDate: new DateTime(2001, 2, 1)
+                )
+            };
+            var expected = new List<AmortizationScheduleItem>
+            {
+                new AmortizationScheduleItem
+                {
+                    Date = new DateTime(2001, 2, 1),
+                    Interest = 8.49315m,
+                    Principal = 330.40685m,
+                    RemainingBalance = 669.59315m
+                },
+                new AmortizationScheduleItem
+                {
+                    Date = new DateTime(2001, 3, 1),
+                    Interest = 5.13660m,
+                    Principal = 333.76340m,
+                    RemainingBalance = 335.82976m
+                },
+                new AmortizationScheduleItem
+                {
+                    Date = new DateTime(2001, 4, 1),
+                    Interest = 2.85225m,
+                    Principal = 335.82976m,
+                    RemainingBalance = 0m
+                }
+            };
+
+            //Act
+            var actual = AmortizationCalculator.GenerateAmortizationSchedule(
+                loan,
+                paymentSchedule
+            );
+
+            //Assert
+            actual
+                .Select(x => new AmortizationScheduleItem
+                {
+                    Date = x.Date,
+                    Interest = TestUtils.RoundDecimal(x.Interest),
+                    Principal = TestUtils.RoundDecimal(x.Principal),
+                    RemainingBalance =
+                        TestUtils.RoundDecimal(x.RemainingBalance),
+                })
+                .Should()
+                .BeEquivalentTo(expected, x => x.Excluding(x => x.Schedule));
+        }
+
+        [TestMethod]
+        public void GenerateAmSchedule_PaymentTypeIsLevelPrincipal_ShouldGenerateAmSchedule()
+        {
+            //Assemble
+            var levelPrincipalAmount = 300;
+            var numberOfPayments = 3;
+            var loan = GetTestLoan(
+                amount: levelPrincipalAmount * numberOfPayments,
+                interestRate: 0.1m
+            );
+            var paymentSchedule = new List<PaymentSchedule>
+            {
+                GetTestPaymentSchedule(
+                    numberOfPayments: numberOfPayments,
+                    paymentAmount: levelPrincipalAmount,
+                    paymentFrequency: PaymentFrequency.Monthly,
+                    paymentType: PaymentType.LevelPrincipal,
+                    startDate: new DateTime(2001, 2, 1)
+                )
+            };
+            var expected = new List<AmortizationScheduleItem>
+            {
+                new AmortizationScheduleItem
+                {
+                    Date = new DateTime(2001, 2, 1),
+                    Interest = 7.64384m,
+                    Principal = levelPrincipalAmount,
+                    RemainingBalance = 600
+                },
+                new AmortizationScheduleItem
+                {
+                    Date = new DateTime(2001, 3, 1),
+                    Interest = 4.60274m,
+                    Principal = levelPrincipalAmount,
+                    RemainingBalance = 300
+                },
+                new AmortizationScheduleItem
+                {
+                    Date = new DateTime(2001, 4, 1),
+                    Interest = 2.54795m,
+                    Principal = levelPrincipalAmount,
+                    RemainingBalance = 0
+                }
+            };
+
+            //Act
+            var actual = AmortizationCalculator.GenerateAmortizationSchedule(
+                loan,
+                paymentSchedule
+            );
+
+            //Assert
+            actual
+                .Select(x => new AmortizationScheduleItem
+                {
+                    Date = x.Date,
+                    Interest = TestUtils.RoundDecimal(x.Interest),
+                    Principal = TestUtils.RoundDecimal(x.Principal),
+                    RemainingBalance =
+                        TestUtils.RoundDecimal(x.RemainingBalance),
+                })
+                .Should()
+                .BeEquivalentTo(expected, x => x.Excluding(x => x.Schedule));
+        }
+
+        [TestMethod]
+        public void GenerateAmSchedule_PaymentTypeIsPrincipalPercentage_ShouldGenerateAmSchedule()
+        {
+            //Assemble
+            var loan = GetTestLoan(
+                amount: 1000,
+                interestRate: 0.1m
+            );
+            var paymentSchedule = new List<PaymentSchedule>
+            {
+                GetTestPaymentSchedule(
+                    numberOfPayments: 3,
+                    paymentAmount: 0.2m,
+                    paymentFrequency: PaymentFrequency.Monthly,
+                    paymentType: PaymentType.PrincipalPercentage,
+                    startDate: new DateTime(2001, 2, 1)
+                )
+            };
+            var expected = new List<AmortizationScheduleItem>
+            {
+                new AmortizationScheduleItem
+                {
+                    Date = new DateTime(2001, 2, 1),
+                    Interest = 8.49315m,
+                    Principal = 200,
+                    RemainingBalance = 800
+                },
+                new AmortizationScheduleItem
+                {
+                    Date = new DateTime(2001, 3, 1),
+                    Interest = 6.13699m,
+                    Principal = 160,
+                    RemainingBalance = 640
+                },
+                new AmortizationScheduleItem
+                {
+                    Date = new DateTime(2001, 4, 1),
+                    Interest = 5.43562m,
+                    Principal = 128,
+                    RemainingBalance = 512
+                }
+            };
+
+            //Act
+            var actual = AmortizationCalculator.GenerateAmortizationSchedule(
+                loan,
+                paymentSchedule
+            );
+
+            //Assert
+            actual
+                .Select(x => new AmortizationScheduleItem
+                {
+                    Date = x.Date,
+                    Interest = TestUtils.RoundDecimal(x.Interest),
+                    Principal = TestUtils.RoundDecimal(x.Principal),
+                    RemainingBalance =
+                        TestUtils.RoundDecimal(x.RemainingBalance),
+                })
+                .Should()
+                .BeEquivalentTo(expected, x => x.Excluding(x => x.Schedule));
+        }
+
+        [TestMethod]
+        public void GenerateAmSchedule_PaymentTypeIsPrincipalOnly_ShouldGenerateAmSchedule()
+        {
+            //Assemble
+            var levelPrincipalAmount = 300;
+            var numberOfPayments = 3;
+            var loan = GetTestLoan(
+                amount: levelPrincipalAmount * numberOfPayments,
+                interestRate: 0.1m
+            );
+            var paymentSchedule = new List<PaymentSchedule>
+            {
+                GetTestPaymentSchedule(
+                    numberOfPayments: numberOfPayments,
+                    paymentAmount: levelPrincipalAmount,
+                    paymentFrequency: PaymentFrequency.Monthly,
+                    paymentType: PaymentType.PrincipalOnly,
+                    startDate: new DateTime(2001, 2, 1)
+                )
+            };
+            var expected = new List<AmortizationScheduleItem>
+            {
+                new AmortizationScheduleItem
+                {
+                    Date = new DateTime(2001, 2, 1),
+                    Interest = 0,
+                    Principal = levelPrincipalAmount,
+                    RemainingBalance = 600
+                },
+                new AmortizationScheduleItem
+                {
+                    Date = new DateTime(2001, 3, 1),
+                    Interest = 0,
+                    Principal = levelPrincipalAmount,
+                    RemainingBalance = 300
+                },
+                new AmortizationScheduleItem
+                {
+                    Date = new DateTime(2001, 4, 1),
+                    Interest = 0,
+                    Principal = levelPrincipalAmount,
+                    RemainingBalance = 0
+                }
+            };
+
+            //Act
+            var actual = AmortizationCalculator.GenerateAmortizationSchedule(
+                loan,
+                paymentSchedule
+            );
+
+            //Assert
+            actual
+                .Select(x => new AmortizationScheduleItem
+                {
+                    Date = x.Date,
+                    Interest = TestUtils.RoundDecimal(x.Interest),
+                    Principal = TestUtils.RoundDecimal(x.Principal),
+                    RemainingBalance =
+                        TestUtils.RoundDecimal(x.RemainingBalance),
+                })
+                .Should()
+                .BeEquivalentTo(expected, x => x.Excluding(x => x.Schedule));
+        }
     }
 }
