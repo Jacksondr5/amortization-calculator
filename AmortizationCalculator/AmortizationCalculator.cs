@@ -63,6 +63,7 @@ namespace AmortizationCalculator
                     case PaymentType.InterestOnly:
                         payment.Interest = accruedInterest;
                         payment.Principal = 0;
+                        accruedInterest = 0;
                         break;
                     case PaymentType.LevelPayment:
                         payment.Interest = accruedInterest;
@@ -70,6 +71,7 @@ namespace AmortizationCalculator
                             payment.Schedule.PaymentAmount - accruedInterest,
                             remainingBalance
                         );
+                        accruedInterest = 0;
                         break;
                     case PaymentType.LevelPrincipal:
                         payment.Interest = accruedInterest;
@@ -77,6 +79,7 @@ namespace AmortizationCalculator
                             payment.Schedule.PaymentAmount,
                             remainingBalance
                         );
+                        accruedInterest = 0;
                         break;
                     case PaymentType.PrincipalPercentage:
                         payment.Interest = accruedInterest;
@@ -84,6 +87,7 @@ namespace AmortizationCalculator
                             remainingBalance * payment.Schedule.PaymentAmount,
                             remainingBalance
                         );
+                        accruedInterest = 0;
                         break;
                     case PaymentType.PrincipalOnly:
                         payment.Interest = 0;
@@ -95,7 +99,6 @@ namespace AmortizationCalculator
                     default:
                         throw new InvalidOperationException();
                 }
-                accruedInterest -= accruedInterest;
 
                 lastPaymentDate = LocalDate.FromDateTime(payment.Date);
                 payment.RemainingBalance = remainingBalance -= payment.Principal;
