@@ -118,7 +118,7 @@ export function Home() {
         </Select>
       </FormControl>
       <TextField
-        label="Interest Rate"
+        label="Interest Rate (%)"
         value={interestRate}
         onChange={(e) => setInterestRate(e.target.value)}
       />
