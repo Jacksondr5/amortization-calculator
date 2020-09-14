@@ -5,4 +5,9 @@
     <AssemblyName>AmortizationCalculator.DemoMvc</AssemblyName>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Exclude the project from analysis -->
+    <SonarQubeExclude>true</SonarQubeExclude>
+  </PropertyGroup>
+
 </Project>
