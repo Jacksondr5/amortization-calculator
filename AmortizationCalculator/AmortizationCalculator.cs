@@ -64,7 +64,7 @@ namespace AmortizationCalculator
             {
                 amSchedule.Add(new AmortizationScheduleItem
                 {
-                    Date = amSchedule.Max(x => x.Date),
+                    Date = loan.MaturityDate,
                     Schedule = new PaymentSchedule
                     {
                         PaymentType = PaymentType.Bullet
@@ -94,6 +94,7 @@ namespace AmortizationCalculator
                 LocalDate.FromDateTime(loan.InterestAccrualStartDate);
             var accruedInterest = 0m;
             var remainingBalance = loan.Amount;
+            var shouldDeleteBulletPayment = false;
             foreach (var payment in amSchedule)
             {
                 //Calculate accrued interest
@@ -108,6 +109,11 @@ namespace AmortizationCalculator
                 switch (payment.Schedule.PaymentType)
                 {
                     case PaymentType.Bullet:
+                        if (accruedInterest == 0 && remainingBalance == 0)
+                        {
+                            shouldDeleteBulletPayment = true;
+                            break;
+                        }
                         payment.Interest = accruedInterest;
                         payment.Principal = remainingBalance;
                         accruedInterest = 0;
@@ -164,6 +170,8 @@ namespace AmortizationCalculator
                 lastPaymentDate = LocalDate.FromDateTime(payment.Date);
                 payment.RemainingBalance = remainingBalance -= payment.Principal;
             }
+            if (shouldDeleteBulletPayment)
+                amSchedule.RemoveAt(amSchedule.Count - 1);
             return amSchedule;
         }
 

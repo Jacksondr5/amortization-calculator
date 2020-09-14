@@ -27,6 +27,7 @@ namespace AmortizationCalculator
         public decimal Amount { get; set; }
         public decimal InterestRate { get; set; }
         public DateTime InterestAccrualStartDate { get; set; }
+        public DateTime MaturityDate { get; set; }
     }
 
     public class PaymentSchedule

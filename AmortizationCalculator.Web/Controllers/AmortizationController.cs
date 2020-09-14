@@ -15,6 +15,7 @@ namespace AmCalcWeb.Controllers
             [FromBody] AmCalcInput input
         )
         {
+            input.Loan.InterestRate = input.Loan.InterestRate / 100;
             return AmortizationCalculator.AmortizationCalculator.GenerateAmortizationSchedule(
                 input.Loan,
                 input.PaymentSchedules

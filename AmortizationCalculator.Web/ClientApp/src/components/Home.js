@@ -27,12 +27,12 @@ const accrualBasisList = [
 
 const paymentFrequencies = [
   { name: "Annual", value: 0 },
-  { name: "Biweekly", value: 1 },
-  { name: "Bullet", value: 2 },
-  { name: "Monthly", value: 3 },
-  { name: "Quarterly", value: 4 },
-  { name: "SemiAnnual", value: 5 },
-  { name: "Weekly", value: 6 },
+  // { name: "Biweekly", value: 1 },
+  { name: "Bullet", value: 1 },
+  { name: "Monthly", value: 2 },
+  { name: "Quarterly", value: 3 },
+  { name: "SemiAnnual", value: 4 },
+  { name: "Weekly", value: 5 },
 ];
 
 const paymentTypes = [
@@ -83,13 +83,12 @@ function PaymentScheduleReducer(state, action) {
   return retVal;
 }
 
-async function GetAmSchedule(loan, paymentSchedules, setAmSchedule) {}
-
 export function Home() {
   var [loanAmount, setLoanAmount] = useState(0);
   var [accrualBasis, setAccrualBasis] = useState(3);
   var [interestRate, setInterestRate] = useState(0);
   var [interestStartDate, setInterestStartDate] = useState(moment());
+  var [maturityDate, setMaturityDate] = useState(moment());
   var [
     paymentSchedules,
     setPaymentSchedules,
@@ -131,6 +130,14 @@ export function Home() {
         value={interestStartDate}
         onChange={setInterestStartDate}
       />
+      <DatePicker
+        label="Maturity Date"
+        format="MM/DD/yyyy"
+        views={["year", "month", "date"]}
+        openTo="year"
+        value={maturityDate}
+        onChange={setMaturityDate}
+      />
       <br />
       <h3>Payment Schedules</h3>
       <PaymentScheduleList
@@ -156,6 +163,7 @@ export function Home() {
             amount: new Number(loanAmount),
             interestRate: new Number(interestRate),
             interestAccrualStartDate: interestStartDate.format(),
+            maturityDate: maturityDate.format(),
           };
           var mappedPaymentSchedules = paymentSchedules.map((x) => ({
             startDate: x.startDate.format(),
