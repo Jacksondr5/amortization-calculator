@@ -371,6 +371,69 @@ namespace AmortizationCalculator.Test
         }
 
         [TestMethod]
+        public void GenerateAmSchedule_LevelPaymentIsLessThanInterest_ShouldPayAsMuchInterestAsPossible()
+        {
+            //Assemble
+            var loan = GetTestLoan(
+                amount: 1000000,
+                interestRate: 0.5m
+            );
+            var paymentSchedule = new List<PaymentSchedule>
+            {
+                GetTestPaymentSchedule(
+                    endDate: new DateTime(2001, 4, 1),
+                    paymentAmount: 500m,
+                    paymentFrequency: PaymentFrequency.Monthly,
+                    paymentType: PaymentType.LevelPayment,
+                    startDate: new DateTime(2001, 2, 1)
+                )
+            };
+            var expected = new List<AmortizationScheduleItem>
+            {
+                new AmortizationScheduleItem
+                {
+                    Date = new DateTime(2001, 2, 1),
+                    Interest = 500,
+                    Principal = 0,
+                    RemainingBalance = 1000000
+                },
+                new AmortizationScheduleItem
+                {
+                    Date = new DateTime(2001, 3, 1),
+                    Interest = 500,
+                    Principal = 0,
+                    RemainingBalance = 1000000
+                },
+                new AmortizationScheduleItem
+                {
+                    Date = new DateTime(2001, 4, 1),
+                    Interest = 122287.67123m,
+                    Principal = 1000000,
+                    RemainingBalance = 0m
+                },
+            };
+
+            //Act
+            var actual = AmortizationCalculator.GenerateAmortizationSchedule(
+                loan,
+                paymentSchedule
+            );
+
+            //Assert
+            actual
+                .Select(x => new AmortizationScheduleItem
+                {
+                    Date = x.Date,
+                    Interest = TestUtils.RoundDecimal(x.Interest),
+                    Principal = TestUtils.RoundDecimal(x.Principal),
+                    RemainingBalance =
+                        TestUtils.RoundDecimal(x.RemainingBalance),
+                })
+                .Should()
+                .BeEquivalentTo(expected, x => x.Excluding(x => x.Schedule));
+        }
+
+        [TestMethod]
         public void GenerateAmSchedule_PaymentTypeIsLevelPrincipal_ShouldGenerateAmSchedule()
         {
             //Assemble

@@ -82,6 +82,14 @@ namespace AmortizationCalculator
                 )
                 .ToList();
 
+            return CalculatePayments(loan, amSchedule);
+        }
+
+        private static List<AmortizationScheduleItem> CalculatePayments(
+            Loan loan,
+            List<AmortizationScheduleItem> amSchedule
+        )
+        {
             var lastPaymentDate =
                 LocalDate.FromDateTime(loan.InterestAccrualStartDate);
             var accruedInterest = 0m;
@@ -110,12 +118,21 @@ namespace AmortizationCalculator
                         accruedInterest = 0;
                         break;
                     case PaymentType.LevelPayment:
-                        payment.Interest = accruedInterest;
-                        payment.Principal = GetPrincipal(
-                            payment.Schedule.PaymentAmount - accruedInterest,
-                            remainingBalance
-                        );
-                        accruedInterest = 0;
+                        if (accruedInterest > payment.Schedule.PaymentAmount)
+                        {
+                            payment.Interest = payment.Schedule.PaymentAmount;
+                            payment.Principal = 0;
+                            accruedInterest -= payment.Schedule.PaymentAmount;
+                        }
+                        else
+                        {
+                            payment.Interest = accruedInterest;
+                            payment.Principal = GetPrincipal(
+                                payment.Schedule.PaymentAmount - accruedInterest,
+                                remainingBalance
+                            );
+                            accruedInterest = 0;
+                        }
                         break;
                     case PaymentType.LevelPrincipal:
                         payment.Interest = accruedInterest;
@@ -147,7 +164,6 @@ namespace AmortizationCalculator
                 lastPaymentDate = LocalDate.FromDateTime(payment.Date);
                 payment.RemainingBalance = remainingBalance -= payment.Principal;
             }
-
             return amSchedule;
         }
 
