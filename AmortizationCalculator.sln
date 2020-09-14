@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30503.244
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AmortizationCalculator", "AmortizationCalculator\AmortizationCalculator.csproj", "{B1F02C4C-49D4-4EDB-985C-28F282923C2C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AmortizationCalculator", "AmortizationCalculator\AmortizationCalculator.csproj", "{B1F02C4C-49D4-4EDB-985C-28F282923C2C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AmortizationCalculator.Test", "AmortizationCalculator.Test\AmortizationCalculator.Test.csproj", "{3924A87E-5E41-4C67-83E4-A14F8263BC5F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AmortizationCalculator.Test", "AmortizationCalculator.Test\AmortizationCalculator.Test.csproj", "{3924A87E-5E41-4C67-83E4-A14F8263BC5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AmortizationCalculator.DemoMvc", "AmortizationCalculator.DemoMvc\AmortizationCalculator.DemoMvc.csproj", "{78F82434-B489-4E3C-B9F3-859754753A46}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AmortizationCalculator.Web", "AmortizationCalculator.Web\AmortizationCalculator.Web.csproj", "{52A1FC4E-2397-4AC9-8B9C-B9BCC8EFEE17}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,9 +17,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{B1F02C4C-49D4-4EDB-985C-28F282923C2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -46,17 +43,23 @@ Global
 		{3924A87E-5E41-4C67-83E4-A14F8263BC5F}.Release|x64.Build.0 = Release|Any CPU
 		{3924A87E-5E41-4C67-83E4-A14F8263BC5F}.Release|x86.ActiveCfg = Release|Any CPU
 		{3924A87E-5E41-4C67-83E4-A14F8263BC5F}.Release|x86.Build.0 = Release|Any CPU
-		{78F82434-B489-4E3C-B9F3-859754753A46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{78F82434-B489-4E3C-B9F3-859754753A46}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{78F82434-B489-4E3C-B9F3-859754753A46}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{78F82434-B489-4E3C-B9F3-859754753A46}.Debug|x64.Build.0 = Debug|Any CPU
-		{78F82434-B489-4E3C-B9F3-859754753A46}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{78F82434-B489-4E3C-B9F3-859754753A46}.Debug|x86.Build.0 = Debug|Any CPU
-		{78F82434-B489-4E3C-B9F3-859754753A46}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{78F82434-B489-4E3C-B9F3-859754753A46}.Release|Any CPU.Build.0 = Release|Any CPU
-		{78F82434-B489-4E3C-B9F3-859754753A46}.Release|x64.ActiveCfg = Release|Any CPU
-		{78F82434-B489-4E3C-B9F3-859754753A46}.Release|x64.Build.0 = Release|Any CPU
-		{78F82434-B489-4E3C-B9F3-859754753A46}.Release|x86.ActiveCfg = Release|Any CPU
-		{78F82434-B489-4E3C-B9F3-859754753A46}.Release|x86.Build.0 = Release|Any CPU
+		{52A1FC4E-2397-4AC9-8B9C-B9BCC8EFEE17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52A1FC4E-2397-4AC9-8B9C-B9BCC8EFEE17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52A1FC4E-2397-4AC9-8B9C-B9BCC8EFEE17}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{52A1FC4E-2397-4AC9-8B9C-B9BCC8EFEE17}.Debug|x64.Build.0 = Debug|Any CPU
+		{52A1FC4E-2397-4AC9-8B9C-B9BCC8EFEE17}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{52A1FC4E-2397-4AC9-8B9C-B9BCC8EFEE17}.Debug|x86.Build.0 = Debug|Any CPU
+		{52A1FC4E-2397-4AC9-8B9C-B9BCC8EFEE17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52A1FC4E-2397-4AC9-8B9C-B9BCC8EFEE17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52A1FC4E-2397-4AC9-8B9C-B9BCC8EFEE17}.Release|x64.ActiveCfg = Release|Any CPU
+		{52A1FC4E-2397-4AC9-8B9C-B9BCC8EFEE17}.Release|x64.Build.0 = Release|Any CPU
+		{52A1FC4E-2397-4AC9-8B9C-B9BCC8EFEE17}.Release|x86.ActiveCfg = Release|Any CPU
+		{52A1FC4E-2397-4AC9-8B9C-B9BCC8EFEE17}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B18AF149-6F53-4481-BE9C-2B66E62B025C}
 	EndGlobalSection
 EndGlobal

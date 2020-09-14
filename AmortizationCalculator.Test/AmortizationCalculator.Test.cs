@@ -49,14 +49,14 @@ namespace AmortizationCalculator.Test
         };
 
         private static PaymentSchedule GetTestPaymentSchedule(
-            int numberOfPayments = 0,
+            DateTime? endDate = null,
             PaymentFrequency paymentFrequency = PaymentFrequency.Annual,
             decimal paymentAmount = 0,
             PaymentType paymentType = PaymentType.InterestOnly,
             DateTime? startDate = null
         ) => new PaymentSchedule
         {
-            NumberOfPayments = numberOfPayments,
+            EndDate = endDate ?? new DateTime(2001, 1, 1),
             PaymentAmount = paymentAmount,
             PaymentFrequency = paymentFrequency,
             PaymentType = paymentType,
@@ -68,6 +68,7 @@ namespace AmortizationCalculator.Test
         {
             //Assemble
             var startDate = new LocalDate(2001, 1, 1);
+            var endDate = new LocalDate(2003, 1, 1);
             var expected = new List<DateTime>
             {
                 startDate.ToDateTimeUnspecified(),
@@ -76,7 +77,7 @@ namespace AmortizationCalculator.Test
             };
 
             //Act
-            RunFrequencyTest(expected, PaymentFrequency.Annual);
+            RunFrequencyTest(expected, endDate, PaymentFrequency.Annual);
         }
 
         [TestMethod]
@@ -84,6 +85,7 @@ namespace AmortizationCalculator.Test
         {
             //Assemble
             var startDate = new LocalDate(2001, 1, 1);
+            var endDate = new LocalDate(2002, 1, 1);
             var expected = new List<DateTime>
             {
                 startDate.ToDateTimeUnspecified(),
@@ -92,7 +94,7 @@ namespace AmortizationCalculator.Test
             };
 
             //Act
-            RunFrequencyTest(expected, PaymentFrequency.SemiAnnual);
+            RunFrequencyTest(expected, endDate, PaymentFrequency.SemiAnnual);
         }
 
         [TestMethod]
@@ -100,6 +102,7 @@ namespace AmortizationCalculator.Test
         {
             //Assemble
             var startDate = new LocalDate(2001, 1, 1);
+            var endDate = new LocalDate(2001, 7, 1);
             var expected = new List<DateTime>
             {
                 startDate.ToDateTimeUnspecified(),
@@ -108,7 +111,7 @@ namespace AmortizationCalculator.Test
             };
 
             //Act
-            RunFrequencyTest(expected, PaymentFrequency.Quarterly);
+            RunFrequencyTest(expected, endDate, PaymentFrequency.Quarterly);
         }
 
         [TestMethod]
@@ -116,6 +119,7 @@ namespace AmortizationCalculator.Test
         {
             //Assemble
             var startDate = new LocalDate(2001, 1, 1);
+            var endDate = new LocalDate(2001, 3, 1);
             var expected = new List<DateTime>
             {
                 startDate.ToDateTimeUnspecified(),
@@ -124,7 +128,7 @@ namespace AmortizationCalculator.Test
             };
 
             //Act
-            RunFrequencyTest(expected, PaymentFrequency.Monthly);
+            RunFrequencyTest(expected, endDate, PaymentFrequency.Monthly);
         }
 
         [TestMethod]
@@ -132,6 +136,7 @@ namespace AmortizationCalculator.Test
         {
             //Assemble
             var startDate = new LocalDate(2001, 1, 1);
+            var endDate = new LocalDate(2001, 1, 15);
             var expected = new List<DateTime>
             {
                 startDate.ToDateTimeUnspecified(),
@@ -140,11 +145,12 @@ namespace AmortizationCalculator.Test
             };
 
             //Act
-            RunFrequencyTest(expected, PaymentFrequency.Weekly);
+            RunFrequencyTest(expected, endDate, PaymentFrequency.Weekly);
         }
 
         private static void RunFrequencyTest(
             List<DateTime> expected,
+            LocalDate endDate,
             PaymentFrequency frequency
         )
         {
@@ -154,7 +160,7 @@ namespace AmortizationCalculator.Test
                 new List<PaymentSchedule>
                 {
                     GetTestPaymentSchedule(
-                        numberOfPayments: expected.Count,
+                        endDate: endDate.ToDateTimeUnspecified(),
                         paymentFrequency: frequency
                     )
                 }
@@ -185,12 +191,15 @@ namespace AmortizationCalculator.Test
                 new List<PaymentSchedule>
                 {
                     GetTestPaymentSchedule(
-                        numberOfPayments: 2,
+                        endDate:
+                            annualStartDate.PlusYears(1).ToDateTimeUnspecified(),
                         paymentFrequency: PaymentFrequency.Annual,
                         startDate: annualStartDate.ToDateTimeUnspecified()
                     ),
                     GetTestPaymentSchedule(
-                        numberOfPayments: 3,
+                        endDate: semiAnnualStartDate
+                            .PlusYears(1)
+                            .ToDateTimeUnspecified(),
                         paymentFrequency: PaymentFrequency.SemiAnnual,
                         startDate: semiAnnualStartDate.ToDateTimeUnspecified()
                     )
@@ -222,7 +231,7 @@ namespace AmortizationCalculator.Test
             var paymentSchedule = new List<PaymentSchedule>
             {
                 GetTestPaymentSchedule(
-                    numberOfPayments: 1,
+                    endDate: paymentStartDate,
                     paymentFrequency: PaymentFrequency.Annual,
                     startDate: paymentStartDate
                 )
@@ -283,22 +292,22 @@ namespace AmortizationCalculator.Test
             var paymentSchedules = new List<PaymentSchedule>
             {
                 GetTestPaymentSchedule(
-                    numberOfPayments: 1,
+                    endDate: monthlyDate,
                     paymentFrequency: PaymentFrequency.Monthly,
                     startDate: monthlyDate
                 ),
                 GetTestPaymentSchedule(
-                    numberOfPayments: 1,
+                    endDate: quarterlyDate,
                     paymentFrequency: PaymentFrequency.Quarterly,
                     startDate: quarterlyDate
                 ),
                 GetTestPaymentSchedule(
-                    numberOfPayments: 1,
+                    endDate: semiDate,
                     paymentFrequency: PaymentFrequency.SemiAnnual,
                     startDate: semiDate
                 ),
                 GetTestPaymentSchedule(
-                    numberOfPayments: 1,
+                    endDate: annualDate,
                     paymentFrequency: PaymentFrequency.Annual,
                     startDate: annualDate
                 )
@@ -332,7 +341,7 @@ namespace AmortizationCalculator.Test
             var paymentSchedule = new List<PaymentSchedule>
             {
                 GetTestPaymentSchedule(
-                    numberOfPayments: 3,
+                    endDate: new DateTime(2001, 4, 1),
                     paymentAmount: 338.9m,
                     paymentFrequency: PaymentFrequency.Monthly,
                     paymentType: PaymentType.LevelPayment,
@@ -397,7 +406,7 @@ namespace AmortizationCalculator.Test
             var paymentSchedule = new List<PaymentSchedule>
             {
                 GetTestPaymentSchedule(
-                    numberOfPayments: numberOfPayments,
+                    endDate: new DateTime(2001, 4, 1),
                     paymentAmount: levelPrincipalAmount,
                     paymentFrequency: PaymentFrequency.Monthly,
                     paymentType: PaymentType.LevelPrincipal,
@@ -460,7 +469,7 @@ namespace AmortizationCalculator.Test
             var paymentSchedule = new List<PaymentSchedule>
             {
                 GetTestPaymentSchedule(
-                    numberOfPayments: 3,
+                    endDate: new DateTime(2001, 4, 1),
                     paymentAmount: 0.2m,
                     paymentFrequency: PaymentFrequency.Monthly,
                     paymentType: PaymentType.PrincipalPercentage,
@@ -525,7 +534,7 @@ namespace AmortizationCalculator.Test
             var paymentSchedule = new List<PaymentSchedule>
             {
                 GetTestPaymentSchedule(
-                    numberOfPayments: numberOfPayments,
+                    endDate: new DateTime(2001, 4, 1),
                     paymentAmount: levelPrincipalAmount,
                     paymentFrequency: PaymentFrequency.Monthly,
                     paymentType: PaymentType.PrincipalOnly,
@@ -592,7 +601,8 @@ namespace AmortizationCalculator.Test
             var paymentSchedules = new List<PaymentSchedule>
             {
                 GetTestPaymentSchedule(
-                    numberOfPayments: 2,
+                    endDate:
+                        loanStartDate.PlusMonths(2).ToDateTimeUnspecified(),
                     paymentFrequency: PaymentFrequency.Monthly,
                     paymentAmount: 100,
                     paymentType: PaymentType.LevelPayment,
@@ -600,7 +610,9 @@ namespace AmortizationCalculator.Test
                         loanStartDate.PlusMonths(1).ToDateTimeUnspecified()
                 ),
                 GetTestPaymentSchedule(
-                    numberOfPayments: 2,
+                    endDate: percentagePaymentsStartDate
+                        .PlusMonths(1)
+                        .ToDateTimeUnspecified(),
                     paymentFrequency: PaymentFrequency.Monthly,
                     paymentAmount: 0.1m,
                     paymentType: PaymentType.PrincipalPercentage,
