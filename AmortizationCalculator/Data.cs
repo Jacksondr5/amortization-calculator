@@ -31,8 +31,7 @@ namespace AmortizationCalculator
 
     public class PaymentSchedule
     {
-        //TODO: might want to change this to end date or something
-        public int NumberOfPayments { get; set; }
+        public DateTime EndDate { get; set; }
         public PaymentFrequency PaymentFrequency { get; set; }
         public decimal PaymentAmount { get; set; }
         public PaymentType PaymentType { get; set; }

@@ -20,7 +20,9 @@ namespace AmortizationCalculator
             {
                 var paymentNumber = 0;
                 var paymentDate = LocalDate.FromDateTime(schedule.StartDate);
-                while (paymentNumber < schedule.NumberOfPayments)
+                while (paymentDate.CompareTo(
+                    LocalDate.FromDateTime(schedule.EndDate)
+                ) < 1)
                 {
                     amSchedule.Add(
                         new AmortizationScheduleItem
