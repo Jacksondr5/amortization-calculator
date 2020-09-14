@@ -19,30 +19,30 @@ import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import MomentUtils from "@date-io/moment";
 
 const accrualBasisList = [
-  { name: "Actual360", value: 0 },
-  { name: "Actual365", value: 1 },
-  { name: "ActualActual", value: 2 },
-  { name: "Thirty360", value: 3 },
+  { name: "Actual/360", value: 0 },
+  { name: "Actual/365", value: 1 },
+  { name: "Actual/Actual", value: 2 },
+  { name: "30/360", value: 3 },
 ];
 
 const paymentFrequencies = [
   { name: "Annual", value: 0 },
-  // { name: "Biweekly", value: 1 },
+  // { name: "Bi-Weekly", value: 1 },
   { name: "Bullet", value: 1 },
   { name: "Monthly", value: 2 },
   { name: "Quarterly", value: 3 },
-  { name: "SemiAnnual", value: 4 },
+  { name: "Semi-Annual", value: 4 },
   { name: "Weekly", value: 5 },
 ];
 
 const paymentTypes = [
   { name: "Bullet", value: 0 },
   { name: "Custom", value: 1 },
-  { name: "InterestOnly", value: 2 },
-  { name: "LevelPayment", value: 3 },
-  { name: "LevelPrincipal", value: 4 },
-  { name: "PrincipalPercentage", value: 5 },
-  { name: "PrincipalOnly", value: 6 },
+  { name: "Interest Only", value: 2 },
+  { name: "Level Payment", value: 3 },
+  { name: "Level Principal", value: 4 },
+  { name: "Principal Percentage", value: 5 },
+  { name: "Principal Only", value: 6 },
 ];
 
 function GetNewPaymentSchedule(id = 0) {
@@ -50,8 +50,8 @@ function GetNewPaymentSchedule(id = 0) {
     id: id,
     startDate: moment(),
     endDate: moment().add(1, "y"),
-    paymentType: { name: "LevelPayment", value: 3 },
-    paymentFrequency: { name: "Annual", value: 0 },
+    paymentType: paymentTypes[3],
+    paymentFrequency: paymentFrequencies[0],
     amount: 500,
   };
 }
