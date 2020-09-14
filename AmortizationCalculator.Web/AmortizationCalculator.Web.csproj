@@ -11,6 +11,11 @@
     <RootNamespace>AmCalcWeb</RootNamespace>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Exclude the project from analysis -->
+    <SonarQubeExclude>true</SonarQubeExclude>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.8" />
   </ItemGroup>
