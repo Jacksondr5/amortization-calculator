@@ -62,5 +62,5 @@ steps:
       azureSubscription: "Pay-As-You-Go(34a85b0b-7284-4a31-8122-8e32ba39a46c)"
       appType: "webAppLinux"
       WebAppName: "j5-amortization-calculator"
-      packageForLinux: "$(System.DefaultWorkingDirectory)/**/*.zip"
+      packageForLinux: "$(System.DefaultWorkingDirectory)/WebDeploy/*.zip"
       RuntimeStack: "DOTNETCORE|3.1"
