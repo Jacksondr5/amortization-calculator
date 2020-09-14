@@ -20,6 +20,17 @@ namespace AmortizationCalculator
             {
                 var paymentNumber = 0;
                 var paymentDate = LocalDate.FromDateTime(schedule.StartDate);
+                if (schedule.PaymentType == PaymentType.Bullet)
+                {
+                    amSchedule.Add(
+                        new AmortizationScheduleItem
+                        {
+                            Date = paymentDate.ToDateTimeUnspecified(),
+                            Schedule = schedule
+                        }
+                    );
+                    continue;
+                }
                 while (paymentDate.CompareTo(
                     LocalDate.FromDateTime(schedule.EndDate)
                 ) < 1)
@@ -31,6 +42,7 @@ namespace AmortizationCalculator
                             Schedule = schedule
                         }
                     );
+
                     paymentDate = schedule.PaymentFrequency switch
                     {
                         PaymentFrequency.Annual => paymentDate.PlusYears(1),
@@ -45,6 +57,31 @@ namespace AmortizationCalculator
                 }
             }
             amSchedule = amSchedule.OrderBy(x => x.Date).ToList();
+            //Remove all payments after the first bullet payment, if present
+            if (!amSchedule.Exists(
+                x => x.Schedule.PaymentType == PaymentType.Bullet
+            ))
+            {
+                amSchedule.Add(new AmortizationScheduleItem
+                {
+                    Date = amSchedule.Max(x => x.Date),
+                    Schedule = new PaymentSchedule
+                    {
+                        PaymentType = PaymentType.Bullet
+                    }
+                });
+            }
+            var bulletDate = amSchedule.First(
+                x => x.Schedule.PaymentType == PaymentType.Bullet
+            ).Date;
+            //Remove any payments after or on the day of the bullet payment
+            amSchedule = amSchedule
+                .Where(x =>
+                    x.Date.CompareTo(bulletDate) < 0 ||
+                    x.Schedule.PaymentType == PaymentType.Bullet
+                )
+                .ToList();
+
             var lastPaymentDate =
                 LocalDate.FromDateTime(loan.InterestAccrualStartDate);
             var accruedInterest = 0m;
@@ -62,6 +99,11 @@ namespace AmortizationCalculator
                 //Calculate payment
                 switch (payment.Schedule.PaymentType)
                 {
+                    case PaymentType.Bullet:
+                        payment.Interest = accruedInterest;
+                        payment.Principal = remainingBalance;
+                        accruedInterest = 0;
+                        break;
                     case PaymentType.InterestOnly:
                         payment.Interest = accruedInterest;
                         payment.Principal = 0;
@@ -83,6 +125,13 @@ namespace AmortizationCalculator
                         );
                         accruedInterest = 0;
                         break;
+                    case PaymentType.PrincipalOnly:
+                        payment.Interest = 0;
+                        payment.Principal = GetPrincipal(
+                            payment.Schedule.PaymentAmount,
+                            remainingBalance
+                        );
+                        break;
                     case PaymentType.PrincipalPercentage:
                         payment.Interest = accruedInterest;
                         payment.Principal = GetPrincipal(
@@ -90,13 +139,6 @@ namespace AmortizationCalculator
                             remainingBalance
                         );
                         accruedInterest = 0;
-                        break;
-                    case PaymentType.PrincipalOnly:
-                        payment.Interest = 0;
-                        payment.Principal = GetPrincipal(
-                            payment.Schedule.PaymentAmount,
-                            remainingBalance
-                        );
                         break;
                     default:
                         throw new InvalidOperationException();
