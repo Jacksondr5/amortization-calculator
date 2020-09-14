@@ -35,12 +35,19 @@ steps:
       feedsToUse: "select"
       verbosityRestore: "Normal"
   - task: DotNetCoreCLI@2
+    displayName: Build Solution
+    inputs:
+      command: "build"
+      projects: $(solution)
+      arguments: "-c $(buildConfiguration) --no-restore --nologo"
+  - task: DotNetCoreCLI@2
+    displayName: Publish Web Project
     inputs:
       command: "publish"
       publishWebProjects: true
       arguments: "-c $(buildConfiguration) --no-restore --nologo -o ./WebDeploy"
   - task: DotNetCoreCLI@2
-    displayName: dotnet test
+    displayName: Run Unit Tests
     inputs:
       command: "test"
       projects: $(solution)
